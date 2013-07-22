@@ -1,6 +1,6 @@
 {
     "name": "shrinkroute",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "main": "./shrinkroute.js",
     "repository": {
         "type": "git",
