@@ -1,7 +1,13 @@
 {
     "name": "shrinkroute",
-    "version": "0.0.1",
+    "description": "Easy named routes for Express.",
+    "version": "0.0.2",
     "main": "./shrinkroute.js",
+    "keywords": [
+        "express",
+        "route",
+        "named"
+    ],
     "repository": {
         "type": "git",
         "url":  "git://github.com/gustavohenke/shrinkroute.git"
@@ -11,9 +17,10 @@
     },
     "devDependencies": {
         "chai": "1.7.x",
-        "express": ">=3.0.0"
+        "express": ">=3.0.0",
+        "mocha": "1.12.x"
     },
     "scripts": {
-        "test": "mocha"
+        "test": "node test.js"
     }
 }
