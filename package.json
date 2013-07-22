@@ -1,0 +1,12 @@
+{
+    "name": "shrinkroute",
+    "version": "0.0.0",
+    "main": "./shrinkroute.js",
+    "dependencies": {
+        "qs": "0.6.5"
+    },
+    "devDependencies": {
+        "chai": "1.7.x",
+        "express": ">=3.0.0"
+    }
+}

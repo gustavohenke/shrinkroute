@@ -1,0 +1,11 @@
+{
+    "node": true,
+    "eqnull": true,
+    "expr": true,
+    "maxlen": 100,
+
+    "predef": [
+        "suite",
+        "test"
+    ]
+}
