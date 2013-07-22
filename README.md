@@ -2,15 +2,9 @@
 
 Named routes for Express. Helps you in achieving DRY routes!
 
-## Installation
-
-Install Shrinkroute via NPM:
-
-```shell
-npm install shrinkroute
-```
-
 ## Usage
+
+See below to understand how simple is to use Shrinkroute:
 
 ```javascript
 var app = express();
@@ -27,7 +21,7 @@ var routes = {
         // Showing/listing a user doesn't require authentication
         get: routes.user.show,
 
-        // Creating/updating a user does require!
+        // Creating/updating a user does require authentication!
         post: [ routes.requireAuthentication, routes.createUser ],
         put: [ routes.requireAuthentication, routes.updateUser ]
     }
@@ -61,6 +55,14 @@ If you'd like to use some undefined params, you're free to do so!
 The generated URL below will be /user?order=posts
 -->
 <a href="<%= url( "user", { order: "posts" }) %>">List users by posts</a>
+```
+
+## Installation
+
+Install Shrinkroute via NPM:
+
+```shell
+npm install shrinkroute
 ```
 
 ## Testing
