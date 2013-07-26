@@ -13,12 +13,14 @@
         "url":  "git://github.com/gustavohenke/shrinkroute.git"
     },
     "dependencies": {
-        "qs": "0.6.5"
+        "qs": "0.6.5",
+        "extend": "1.1.3"
     },
     "devDependencies": {
         "chai": "1.7.x",
         "express": ">=3.0.0",
-        "mocha": "1.12.x"
+        "mocha": "1.12.x",
+        "sinon": "1.7.x"
     },
     "scripts": {
         "test": "node test.js"

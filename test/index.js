@@ -1,6 +1,7 @@
 suite( "Shrinkroute", function() {
     "use strict";
 
+    var sinon = require( "sinon" );
     var expect = require( "chai" ).expect;
     var shrinkroute = require( ".." );
     var express = require( "express" );
@@ -9,25 +10,63 @@ suite( "Shrinkroute", function() {
         this.app = express();
     });
 
-    test( "doesn't go further if routes is not object", function() {
-        expect( shrinkroute( this.app, null ) ).to.be.false;
-        expect( shrinkroute( this.app, 123 ) ).to.be.false;
-        expect( shrinkroute( this.app, true ) ).to.be.false;
-        expect( shrinkroute( this.app, [] ) ).to.be.false;
-        expect( shrinkroute( this.app, "" ) ).to.be.false;
-        expect( shrinkroute( this.app ) ).to.be.false;
+    teardown(function() {
+        delete this.app;
     });
 
-    test( "gives URL helper", function() {
+    // .app() suite
+    // -----------------------------------------------------
+    suite( ".app()", function() {
+        test( "set and decorate the new app", function() {
+            var shrinkr = shrinkroute();
+
+            // Must return itself
+            expect( shrinkr.app( this.app ) ).to.equal( shrinkr );
+
+            // Set the shrinkroute in the app
+            expect( this.app ).to.have.property( "shrinkroute" );
+
+            // Holds a backup of the app route dispatcher
+            expect( shrinkr._dispatcher ).to.not.equal( this.app._router._dispatch );
+        });
+
+        test( "get the current app", function() {
+            var shrinkr = shrinkroute();
+            expect( shrinkr.app() ).to.be.undefined;
+
+            shrinkr.app( this.app );
+            expect( shrinkr.app() ).to.equal( this.app );
+        });
+    });
+
+    // general functionality tests
+    // -----------------------------------------------------
+    test( "uses John Resig style constructors", function() {
+        var shrinkr = shrinkroute( this.app );
+        expect( shrinkr ).to.be.an.instanceOf( shrinkroute );
+    });
+
+    test( "gives local 'url'", function() {
         var oldLocal = this.app.locals.url;
-        var oldFn = this.app._router._dispatch;
 
         shrinkroute( this.app, {} );
-
         expect( this.app.locals.url ).to.be.a( "function" )
                                      .and.to.not.equal( oldLocal );
-
-        expect( this.app._router._dispatch ).to.be.a( "function" )
-                                            .and.to.not.equal( oldFn );
     });
+
+    test( "gives request 'buildUrl'", function() {
+        var req, spy;
+
+        shrinkroute( this.app, {} );
+        spy = sinon.spy( this.app._router, "_dispatch" );
+
+        // We wrap this in try..catch because we don't care about Express exceptions
+        try {
+            spy({}, {}, function() {});
+        } catch ( e ) {}
+
+        req = spy.args[ 0 ][ 0 ];
+        expect( req ).to.have.property( "buildUrl" );
+    });
+
 });
