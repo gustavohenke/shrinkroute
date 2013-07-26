@@ -39,9 +39,14 @@ suite( "Shrinkroute", function() {
         });
     });
 
-    // .separator() suite
+    // separator suite
     // -----------------------------------------------------
-    suite( ".separator()", function() {
+    suite( "separator", function() {
+        test( "should be created by default as '.'", function() {
+            var shrinkr = shrinkroute();
+            expect( shrinkr.separator() ).to.equal( "." );
+        });
+
         test( "set the new separator", function() {
             var shrinkr = shrinkroute();
 
@@ -61,6 +66,65 @@ suite( "Shrinkroute", function() {
             var sep = shrinkr.separator();
 
             expect( sep ).to.equal( "/" );
+        });
+    });
+
+    // .route() suite
+    // -----------------------------------------------------
+    suite( "routes", function() {
+        test( "should be created in Express app", function() {
+            var spy = sinon.spy( this.app, "all" );
+            var route = function() {};
+
+            shrinkroute( this.app, {
+               test: {
+                   path: "/",
+                   all: route
+               }
+            });
+
+            expect( spy.calledOnce ).to.be.ok;
+            expect( spy.args[ 0 ][ 0 ] ).to.equal( "/" );
+            expect( spy.args[ 0 ][ 1 ] ).to.equal( route );
+        });
+
+        test( "should be created with nested paths", function() {
+            // As we don't want to spy on the first route, we'll leave this to be instantiated later
+            var spy;
+
+            var shrinkr = shrinkroute( this.app, {
+                users: {
+                    path: "/users",
+                    all: function() {}
+                }
+            });
+
+            spy = sinon.spy( this.app, "all" );
+            shrinkr.route({
+                "users.list": {
+                    path: "/list",
+                    all: function() {}
+                },
+                "users.list.filtered": {
+                    path: "/filtered",
+                    all: function() {}
+                }
+            });
+
+            expect( spy.callCount ).to.equal( 2 );
+            expect( spy.args[ 0 ][ 0 ] ).to.equal( "/users/list" );
+            expect( spy.args[ 1 ][ 0 ] ).to.equal( "/users/list/filtered" );
+        });
+
+        test( "should not be created if no app set", function() {
+            var shrinkr = shrinkroute();
+            shrinkr.route( "test", {
+                path: "/",
+                all: function() {}
+            });
+
+            // Upon creation, _routes will be undefined
+            expect( shrinkr._routes ).to.be.undefined;
         });
     });
 

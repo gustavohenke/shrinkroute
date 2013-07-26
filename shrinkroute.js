@@ -36,7 +36,7 @@
         }
 
         forEach( obj, function( route, name ) {
-            var i, len, part;
+            var i, len, part, pathPrefix;
             var path = String( route.path );
             var nameParts = name.split( separator );
 
@@ -48,7 +48,9 @@
 
             // Try to loop thru routes nested by name
             if ( nameParts.length > 1 ) {
-                for ( i = 0, len = nameParts.length; i < len; i++ ) {
+                pathPrefix = "";
+
+                for ( i = 0, len = nameParts.length - 1; i < len; i++ ) {
                     part = nameParts[ i ];
 
                     // Skip empty part
@@ -56,6 +58,8 @@
                         continue;
                     }
 
+                    // Join every route name part until here
+                    part = nameParts.slice( 0, i + 1 ).join( separator );
                     part = obj[ part ] || routes[ part ];
 
                     // Don't work inexistent parts of this route
@@ -63,8 +67,10 @@
                         return;
                     }
 
-                    path = String( part.path ) + "/" + path;
+                    pathPrefix += String( part.path );
                 }
+
+                path = pathPrefix + path;
             }
 
             // Replace multiple slashes with only one
@@ -92,7 +98,7 @@
     // John Resig style constructors!
     function Shrinkroute( app, routes, separator ) {
         if ( this instanceof Shrinkroute ) {
-            this.separator( separator );
+            this.separator( separator || "." );
             this.app( app );
             this.route( routes );
         } else {
@@ -132,12 +138,19 @@
         return this._app;
     };
 
+    // Get/set routes in the Shrinkroute instance and Express
     Shrinkroute.prototype.route = function( name, route ) {
+        // Try to set new routes for this instance
         if ( isObject( name ) || ( typeof name === "string" && isObject( route ) ) ) {
-            setRoutes( this, name, route );
+            // If there's no app yet, routes will be simply lost for now
+            if ( this._app ) {
+                setRoutes( this, name, route );
+            }
+
             return this;
         }
 
+        // Never give an reference of our object!
         route = extend( {}, this._routes );
         if ( typeof name === "string" ) {
             route = route[ name ];
