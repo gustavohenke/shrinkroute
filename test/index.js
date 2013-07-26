@@ -39,6 +39,31 @@ suite( "Shrinkroute", function() {
         });
     });
 
+    // .separator() suite
+    // -----------------------------------------------------
+    suite( ".separator()", function() {
+        test( "set the new separator", function() {
+            var shrinkr = shrinkroute();
+
+            shrinkr.separator( "/" );
+            expect( shrinkr._separator ).to.equal( "/" );
+
+            // Cannot override existing separator if not string
+            shrinkr.separator({});
+            expect( shrinkr._separator ).to.equal( "/" );
+
+            shrinkr.separator([]);
+            expect( shrinkr._separator ).to.equal( "/" );
+        });
+
+        test( "get the current separator", function() {
+            var shrinkr = shrinkroute( this.app, {}, "/" );
+            var sep = shrinkr.separator();
+
+            expect( sep ).to.equal( "/" );
+        });
+    });
+
     // general functionality tests
     // -----------------------------------------------------
     test( "uses John Resig style constructors", function() {

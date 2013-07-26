@@ -149,8 +149,8 @@
     // Get/set a separator for route names
     Shrinkroute.prototype.separator = function( separator ) {
         if ( separator ) {
-            separator = typeof separator === "string" ? separator : ".";
-            this._separator = separator;
+            separator = typeof separator === "string" ? separator : this._separator;
+            this._separator = separator || ".";
         } else {
             return this._separator;
         }
