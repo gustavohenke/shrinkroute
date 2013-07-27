@@ -24,38 +24,42 @@
 
     // Iterate an routes object and try to build an nested route
     function getRoutePath( routes, name, separator ) {
-        var i, len, part;
-        var path = String( routes[ name ].path );
-        var nameParts = name.split( separator );
-        var pathPrefix = "";
+        try {
+            var i, len, part;
+            var path = String( routes[ name ].path );
+            var nameParts = name.split( separator );
+            var pathPrefix = "";
 
-        // Try to loop thru routes nested by name
-        for ( i = 0, len = nameParts.length - 1; i < len; i++ ) {
-            part = nameParts[ i ];
+            // Try to loop thru routes nested by name
+            for ( i = 0, len = nameParts.length - 1; i < len; i++ ) {
+                part = nameParts[ i ];
 
-            // Skip empty part
-            if ( part === "" ) {
-                continue;
+                // Skip empty part
+                if ( part === "" ) {
+                    continue;
+                }
+
+                // Join every route name part until here
+                part = nameParts.slice( 0, i + 1 ).join( separator );
+                part = routes[ part ];
+
+                // Don't work inexistent parts of this route
+                if ( !isObject( part ) || !part.path ) {
+                    return;
+                }
+
+                pathPrefix += "/" + String( part.path );
             }
 
-            // Join every route name part until here
-            part = nameParts.slice( 0, i + 1 ).join( separator );
-            part = routes[ part ];
+            path = pathPrefix + path;
 
-            // Don't work inexistent parts of this route
-            if ( !isObject( part ) || !part.path ) {
-                return;
-            }
+            // Replace multiple slashes with only one
+            path = path.replace( /\/+/g, "/" );
 
-            pathPrefix += "/" + String( part.path );
+            return path;
+        } catch ( e ) {
+            return "";
         }
-
-        path = pathPrefix + path;
-
-        // Replace multiple slashes with only one
-        path = path.replace( /\/+/g, "/" );
-
-        return path;
     }
 
     // Set routes in Shrinkroute and Express
@@ -179,65 +183,61 @@
     // Constructs URLs from a route name, by replacing params.
     // Extra params may be appended to the query string.
     Shrinkroute.prototype.url = function( route, params, append ) {
-        try {
-            var query, fail;
-            var path = this._routes[ route ].path || "";
-            var used = [];
+        var query, fail;
+        var path = getRoutePath( this._routes, route, this._separator );
+        var used = [];
 
-            append = append == null ? true : append;
-            params = isObject( params ) ? params : {};
+        append = append == null ? true : append;
+        params = isObject( params ) ? params : {};
 
-            // Start replacing Express style params
-            path = path.replace( /:([\w]+)(\??)/g, function() {
-                var empty;
-                var name = arguments[ 1 ];
-                var optional = arguments[ 2 ] === "?";
+        // Start replacing Express style params
+        path = path.replace( /:([\w]+)(\??)/g, function() {
+            var empty;
+            var name = arguments[ 1 ];
+            var optional = arguments[ 2 ] === "?";
 
-                // Determine if this param is empty
-                empty = params[ name ] == null;
+            // Determine if this param is empty
+            empty = params[ name ] == null;
 
-                // Push to the used params, so it'll not be used when appending to the query string.
-                !empty && used.push( name );
+            // Push to the used params, so it'll not be used when appending to the query string.
+            !empty && used.push( name );
 
-                // Test to see if this route has failed - this is, it has not all required params.
-                fail = fail || !optional && empty;
+            // Test to see if this route has failed - this is, it has not all required params.
+            fail = fail || !optional && empty;
 
-                // Optional and empty params will be replaced with ""
-                return optional && empty ? "" : params[ name ];
-            });
+            // Optional and empty params will be replaced with ""
+            return optional && empty ? "" : params[ name ];
+        });
 
-            // If the route has failed searching for params, let's return an empty string.
-            if ( fail ) {
-                return "";
-            }
-
-            // If the query string may receive extra params, let's do this!
-            if ( append ) {
-                path = url.parse( path );
-                query = qs.parse( path.query );
-
-                forEach( params, function( val, param ) {
-                    if ( used.indexOf( param ) > -1 ) {
-                        // Don't reuse params in the query string
-                        return;
-                    }
-
-                    query[ param ] = null ? "" : val;
-                });
-
-                // Create the query string...
-                path.search = "?" + qs.stringify( query );
-
-                // ...if it's only a ?, then we'll be better with no query string at all.
-                path.search = path.search === "?" ? "" : path.search;
-
-                return url.format( path );
-            }
-
-            return path;
-        } catch ( e ) {
+        // If the route has failed searching for params, let's return an empty string.
+        if ( fail ) {
             return "";
         }
+
+        // If the query string may receive extra params, let's do this!
+        if ( append ) {
+            path = url.parse( path );
+            query = qs.parse( path.query );
+
+            forEach( params, function( val, param ) {
+                if ( used.indexOf( param ) > -1 ) {
+                    // Don't reuse params in the query string
+                    return;
+                }
+
+                query[ param ] = null ? "" : val;
+            });
+
+            // Create the query string...
+            path.search = "?" + qs.stringify( query );
+
+            // ...if it's only a ?, then we'll be better with no query string at all.
+            path.search = path.search === "?" ? "" : path.search;
+
+            return url.format( path );
+        }
+
+        return path;
     };
 
     module.exports = exports.Shrinkroute = Shrinkroute;
