@@ -179,61 +179,65 @@
     // Constructs URLs from a route name, by replacing params.
     // Extra params may be appended to the query string.
     Shrinkroute.prototype.url = function( route, params, append ) {
-        var query, fail;
-        var path = this._routes[ route ].path || "";
-        var used = [];
+        try {
+            var query, fail;
+            var path = this._routes[ route ].path || "";
+            var used = [];
 
-        append = append == null ? true : append;
-        params = isObject( params ) ? params : {};
+            append = append == null ? true : append;
+            params = isObject( params ) ? params : {};
 
-        // Start replacing Express style params
-        path = path.replace( /:([\w]+)(\??)/g, function() {
-            var empty;
-            var name = arguments[ 1 ];
-            var optional = arguments[ 2 ] === "?";
+            // Start replacing Express style params
+            path = path.replace( /:([\w]+)(\??)/g, function() {
+                var empty;
+                var name = arguments[ 1 ];
+                var optional = arguments[ 2 ] === "?";
 
-            // Determine if this param is empty
-            empty = params[ name ] == null;
+                // Determine if this param is empty
+                empty = params[ name ] == null;
 
-            // Push to the used params, so it'll not be used when appending to the query string.
-            !empty && used.push( name );
+                // Push to the used params, so it'll not be used when appending to the query string.
+                !empty && used.push( name );
 
-            // Test to see if this route has failed - this is, it has not all required params.
-            fail = fail || !optional && empty;
+                // Test to see if this route has failed - this is, it has not all required params.
+                fail = fail || !optional && empty;
 
-            // Optional and empty params will be replaced with ""
-            return optional && empty ? "" : params[ name ];
-        });
-
-        // If the route has failed searching for params, let's return an empty string.
-        if ( fail ) {
-            return "";
-        }
-
-        // If the query string may receive extra params, let's do this!
-        if ( append ) {
-            path = url.parse( path );
-            query = qs.parse( path.query );
-
-            forEach( params, function( val, param ) {
-                if ( used.indexOf( param ) > -1 ) {
-                    // Don't reuse params in the query string
-                    return;
-                }
-
-                query[ param ] = null ? "" : val;
+                // Optional and empty params will be replaced with ""
+                return optional && empty ? "" : params[ name ];
             });
 
-            // Create the query string...
-            path.search = "?" + qs.stringify( query );
+            // If the route has failed searching for params, let's return an empty string.
+            if ( fail ) {
+                return "";
+            }
 
-            // ...if it's only a ?, then we'll be better with no query string at all.
-            path.search = path.search === "?" ? "" : path.search;
+            // If the query string may receive extra params, let's do this!
+            if ( append ) {
+                path = url.parse( path );
+                query = qs.parse( path.query );
 
-            return url.format( path );
+                forEach( params, function( val, param ) {
+                    if ( used.indexOf( param ) > -1 ) {
+                        // Don't reuse params in the query string
+                        return;
+                    }
+
+                    query[ param ] = null ? "" : val;
+                });
+
+                // Create the query string...
+                path.search = "?" + qs.stringify( query );
+
+                // ...if it's only a ?, then we'll be better with no query string at all.
+                path.search = path.search === "?" ? "" : path.search;
+
+                return url.format( path );
+            }
+
+            return path;
+        } catch ( e ) {
+            return "";
         }
-
-        return path;
     };
 
     module.exports = exports.Shrinkroute = Shrinkroute;

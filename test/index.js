@@ -131,6 +131,13 @@ suite( "Shrinkroute", function() {
     // url building suite
     // -----------------------------------------------------
     suite( "URL building", function() {
+        test( "[#1] inexistent routes should return empty url", function() {
+            var shrinkr = shrinkroute( this.app );
+
+            expect( shrinkr.url() ).to.equal( "" );
+            expect( shrinkr.url( "users" ) ).to.equal( "" );
+        });
+
         test( "return empty string on missing params", function() {
             var url;
             shrinkroute( this.app, {
