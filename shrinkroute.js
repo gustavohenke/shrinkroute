@@ -22,8 +22,45 @@
         });
     }
 
+    // Iterate an routes object and try to build an nested route
+    function getRoutePath( routes, name, separator ) {
+        var i, len, part;
+        var path = String( routes[ name ].path );
+        var nameParts = name.split( separator );
+        var pathPrefix = "";
+
+        // Try to loop thru routes nested by name
+        for ( i = 0, len = nameParts.length - 1; i < len; i++ ) {
+            part = nameParts[ i ];
+
+            // Skip empty part
+            if ( part === "" ) {
+                continue;
+            }
+
+            // Join every route name part until here
+            part = nameParts.slice( 0, i + 1 ).join( separator );
+            part = routes[ part ];
+
+            // Don't work inexistent parts of this route
+            if ( !isObject( part ) || !part.path ) {
+                return;
+            }
+
+            pathPrefix += "/" + String( part.path );
+        }
+
+        path = pathPrefix + path;
+
+        // Replace multiple slashes with only one
+        path = path.replace( /\/+/g, "/" );
+
+        return path;
+    }
+
     // Set routes in Shrinkroute and Express
     function setRoutes( instance, name, route ) {
+        var merged;
         var app = instance._app;
         var separator = instance._separator;
         var routes = instance._routes || {};
@@ -35,10 +72,10 @@
             obj = name;
         }
 
+        merged = extend( {}, obj, routes );
+
         forEach( obj, function( route, name ) {
-            var i, len, part, pathPrefix;
-            var path = String( route.path );
-            var nameParts = name.split( separator );
+            var path = getRoutePath( merged, name, separator );
 
             // No path = nothing to do with this route.
             // Also, already existing routes will be skipped.
@@ -46,39 +83,9 @@
                 return;
             }
 
-            // Try to loop thru routes nested by name
-            if ( nameParts.length > 1 ) {
-                pathPrefix = "";
-
-                for ( i = 0, len = nameParts.length - 1; i < len; i++ ) {
-                    part = nameParts[ i ];
-
-                    // Skip empty part
-                    if ( part === "" ) {
-                        continue;
-                    }
-
-                    // Join every route name part until here
-                    part = nameParts.slice( 0, i + 1 ).join( separator );
-                    part = obj[ part ] || routes[ part ];
-
-                    // Don't work inexistent parts of this route
-                    if ( !isObject( part ) || !part.path ) {
-                        return;
-                    }
-
-                    pathPrefix += String( part.path );
-                }
-
-                path = pathPrefix + path;
-            }
-
-            // Replace multiple slashes with only one
-            path = path.replace( /\/+/g, "/" );
-
             forEach( route, function( fn, method ) {
                 // Skip the path and invalid HTTP methods
-                if ( method === "path" ) {
+                if ( method === "path" || typeof app[ method ] !== "function" ) {
                     return;
                 }
 
@@ -172,19 +179,36 @@
     // Constructs URLs from a route name, by replacing params.
     // Extra params may be appended to the query string.
     Shrinkroute.prototype.url = function( route, params, append ) {
-        var query;
+        var query, fail;
         var path = this._routes[ route ].path || "";
         var used = [];
 
+        append = append == null ? true : append;
         params = isObject( params ) ? params : {};
 
         // Start replacing Express style params
-        path = path.replace( /:([\w]+)/g, function() {
+        path = path.replace( /:([\w]+)(\??)/g, function() {
+            var empty;
             var name = arguments[ 1 ];
-            params[ name ] != null && used.push( name );
+            var optional = arguments[ 2 ] === "?";
 
-            return params[ name ];
+            // Determine if this param is empty
+            empty = params[ name ] == null;
+
+            // Push to the used params, so it'll not be used when appending to the query string.
+            !empty && used.push( name );
+
+            // Test to see if this route has failed - this is, it has not all required params.
+            fail = fail || !optional && empty;
+
+            // Optional and empty params will be replaced with ""
+            return optional && empty ? "" : params[ name ];
         });
+
+        // If the route has failed searching for params, let's return an empty string.
+        if ( fail ) {
+            return "";
+        }
 
         // If the query string may receive extra params, let's do this!
         if ( append ) {

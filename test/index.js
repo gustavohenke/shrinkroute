@@ -69,7 +69,7 @@ suite( "Shrinkroute", function() {
         });
     });
 
-    // .route() suite
+    // route suite
     // -----------------------------------------------------
     suite( "routes", function() {
         test( "should be created in Express app", function() {
@@ -125,6 +125,71 @@ suite( "Shrinkroute", function() {
 
             // Upon creation, _routes will be undefined
             expect( shrinkr._routes ).to.be.undefined;
+        });
+    });
+
+    // url building suite
+    // -----------------------------------------------------
+    suite( "URL building", function() {
+        test( "return empty string on missing params", function() {
+            var url;
+            shrinkroute( this.app, {
+                user: {
+                    path: "/user/:id"
+                }
+            });
+
+            url = this.app.shrinkroute.url( "user" );
+            expect( url ).to.equal( "" );
+        });
+
+        test( "replace params", function() {
+            var url;
+            shrinkroute( this.app, {
+                user: {
+                    path: "/user/:id/:action/?query=:query"
+                },
+                article: {
+                    path: "/article/:slug?"
+                }
+            });
+
+            url = this.app.shrinkroute.url( "user", {
+                id: 1,
+                action: "edit",
+                query: "123"
+            });
+            expect( url ).to.equal( "/user/1/edit/?query=123" );
+
+            // Optional param passed
+            url = this.app.shrinkroute.url( "article", {
+                slug: "foobar"
+            });
+            expect( url ).to.equal( "/article/foobar" );
+
+            // Optional param missing
+            url = this.app.shrinkroute.url( "article" );
+            expect( url ).to.equal( "/article/" );
+        });
+
+        test( "append or not extra params in the query string", function() {
+            var url;
+            var shrinkr = shrinkroute( this.app, {
+                users: {
+                    path: "/users"
+                }
+            });
+
+            url = shrinkr.url( "users", {
+                name: "foo",
+                nickname: "bar"
+            });
+            expect( url ).to.equal( "/users?name=foo&nickname=bar" );
+
+            url = shrinkr.url( "users", {
+                name: "foo"
+            }, false );
+            expect( url ).to.equal( "/users" );
         });
     });
 
