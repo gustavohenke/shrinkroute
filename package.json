@@ -1,16 +1,27 @@
 {
     "name": "shrinkroute",
     "description": "Easy named routes for Express.",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "main": "./shrinkroute.js",
     "keywords": [
         "express",
         "route",
-        "named"
+        "named",
+        "nested"
     ],
+    "author": {
+        "name": "Gustavo Henke",
+        "url":  "https://github.com/gustavohenke"
+    },
     "repository": {
         "type": "git",
         "url":  "git://github.com/gustavohenke/shrinkroute.git"
+    },
+    "bugs": {
+        "url": "https://github.com/gustavohenke/shrinkroute/issues"
+    },
+    "engines": {
+        "node": ">=0.10.0"
     },
     "dependencies": {
         "qs": "0.6.5",
