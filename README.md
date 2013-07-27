@@ -1,10 +1,46 @@
 # Shrinkroute [![Build Status](https://travis-ci.org/gustavohenke/shrinkroute.png)](https://travis-ci.org/gustavohenke/shrinkroute) [![NPM version](https://badge.fury.io/js/shrinkroute.png)](http://badge.fury.io/js/shrinkroute)
 
-Named routes for Express. Helps you in achieving DRY routes!
+Named and nested routes for Express. Helps you in achieving DRY routes!
 
-## Usage
+Easy as that:
+```javascript
+shrinkroute( app, {
+    "user": {
+        path: "/user/:id?",
+        get: showOrListUsers,
+        post: [ requireAuthentication, createUser ],
+        put: [ requireAuthentication, updateUser ]
+    }
+});
 
-See below to understand how simple is to use Shrinkroute:
+// in your routes...
+function createUser( req, res, next ) {
+    User.create(..., function( err, userId ) {
+        res.redirect( req.buildUrl("user", { id: userId ) );
+    });
+}
+
+// or views...
+<a href="<%= url( "user", { id: 1 }) %>">User profile</a>
+```
+
+## Nested routes
+
+Nested routes are separated by an character, which is by default `.` (you may customize it if you want). When you set nested routes, they'll inherit their parent's route.
+For example:
+
+```javascript
+shrinkroute( app, {
+    "admin": {
+        path: "/admin"
+    },
+    "admin.users": {
+        path: "/users"
+    }
+});
+```
+
+This will end up in a route named `admin` which map to `/admin`, and another route named `admin.users` which map to `/admin/users`.
 
 ## Installation
 
@@ -23,7 +59,7 @@ Returns a new instance of Shrinkroute. This is a shortcut for the following:
 var shrinkr = shrinkroute();
 shrinkr.app( app );
 shrinkr.routes( routes );
-shrinkr.separator( ":" );
+shrinkr.separator( separator );
 ```
 
 ### `.app( [app] )`
