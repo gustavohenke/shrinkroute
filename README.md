@@ -6,63 +6,68 @@ Named routes for Express. Helps you in achieving DRY routes!
 
 See below to understand how simple is to use Shrinkroute:
 
-```javascript
-var app = express();
-var shrinkroute = require( "shrinkroute" );
-var routes = {
-    home: {
-        path: "/",
-        all: function( req, res, next ) {
-            res.send( "Hello World!" );
-        }
-    },
-    user: {
-        path: "/user/:userId?",
-        // Showing/listing a user doesn't require authentication
-        get: routes.user.show,
-
-        // Creating/updating a user does require authentication!
-        post: [ routes.requireAuthentication, routes.createUser ],
-        put: [ routes.requireAuthentication, routes.updateUser ]
-    }
-};
-
-shrinkroute( app, routes );
-```
-
-Doing this will give the possibility of building a URL from the route or from the view.
-Will be given to you `req.buildUrl()` and a local called `url()`, which are the same;
-They'll replace the parameters in your route and append undefined parameters in the generated URL's query string.
-For example:
-
-```javascript
-routes.createUser = function( req, res, next ) {
-    User.create(..., function( err, id ) {
-        // If the created user id is 123, then will redirect you to /user/123
-        res.redirect( req.buildUrl( "user", { userId: id }) );
-    });
-};
-```
-
-```html
-<!-- Some form around, we will send it to the "user" (/user url) route: -->
-<form method="post" action="<%= url( "user" ) %>">
-    ...
-</form>
-
-<!--
-If you'd like to use some undefined params, you're free to do so!
-The generated URL below will be /user?order=posts
--->
-<a href="<%= url( "user", { order: "posts" }) %>">List users by posts</a>
-```
-
 ## Installation
 
 Install Shrinkroute via NPM:
 
 ```shell
 npm install shrinkroute
+```
+
+## API
+
+### `[new] shrinkroute( [app][, routes][, separator = "."] )`
+Returns a new instance of Shrinkroute. This is a shortcut for the following:
+
+```javascript
+var shrinkr = shrinkroute();
+shrinkr.app( app );
+shrinkr.routes( routes );
+shrinkr.separator( ":" );
+```
+
+### `.app( [app] )`
+Get or set the app of this Shrinkroute instance.
+If setting the app, the following things will be available from now on:
+
+* `app.shrinkroute` - the Shrinkroute instance
+* `app.locals.url` - the Shrinkroute URL builder. Will be automatically available to all of your views.
+* `req.buildUrl` - the Shrinkroute URL builder, available only inside a route.
+
+### `.route( name[, route])`
+Get or set a route by its name.
+
+### `.route( [routes] )`
+Get or set all routes at once.
+
+### `.separator( [separator] )`
+Get or set the routes namespace separator. Useful for when using nested routes.
+
+### `.url( [name][, params][, append] )`
+Build the URL for a route. If the route path has parameters in the Express style (`:param`), they must be passed as a object in the `params` argument:
+
+```javascript
+shrinkr.url( "user", {
+    id: 1
+});
+```
+
+If they're not passed, the returned URL will be blank. However, if you mark it as optional (`:param?`), it'll not be required.
+
+Parameters passed in the `params` object that are not defined in the route will be appended to the query string, unless the `append` argument is falsy.
+
+```javascript
+shrinkr.url( "users", {
+    name: "foo"
+});
+
+// => /users?name=foo
+
+shrinkr.url( "users", {
+    name: "foo"
+}, false);
+
+// => /users
 ```
 
 ## Testing
