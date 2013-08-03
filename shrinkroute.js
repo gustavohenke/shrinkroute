@@ -103,6 +103,20 @@
         instance._routes = routes;
     }
 
+    // Lookup all routes until one with the same path of a request is found
+    function lookup( instance, route ) {
+        var name;
+        var routes = instance._routes;
+
+        for ( name in routes ) {
+            if ( routes[ name ].path === route.path ) {
+                return name;
+            }
+        }
+
+        return null;
+    }
+
     // Shrinkroute constructor
     // ------------------------------------------------------------
 
@@ -123,9 +137,23 @@
     // Shrinkroute prototype
     // ------------------------------------------------------------
     Shrinkroute.prototype.app = function( app ) {
+        var matchRequest;
+        var self = this;
+
         if ( app != null ) {
             app.shrinkroute = this;
             this._app = app;
+
+            matchRequest = app._router.matchRequest;
+            app._router.matchRequest = function() {
+                var route = matchRequest.apply( this, arguments );
+                if ( route ) {
+                    // Try to lookup the name of the route
+                    route.name = lookup( self, route );
+                }
+
+                return route;
+            };
 
             return this;
         }

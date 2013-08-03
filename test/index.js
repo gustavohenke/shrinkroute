@@ -223,12 +223,21 @@ suite( "Shrinkroute", function() {
             var ctx = this;
             var app = express();
 
-            var shrinkr = shrinkroute( app );
+            var shrinkr = shrinkroute( app, {
+                index: {
+                    path: "/"
+                }
+            });
             this.stub = sinon.stub();
             this.stub.callsArg( 2 ); // next() from express
 
             app.use( shrinkr.middleware );
             app.use( this.stub );
+            app.use( app.router );
+
+            app.get( "/", function( req, res ) {
+                res.end();
+            });
 
             this.sockets = [];
             this.server = app.listen(function() {
@@ -250,6 +259,17 @@ suite( "Shrinkroute", function() {
             this.server.close( done );
         });
 
+        test( "req.route.name", function( done ) {
+            var req;
+            var stub = this.stub;
+
+            request( "http://127.0.0.1:" + this.port, function() {
+                req = stub.lastCall.args[ 0 ];
+                expect( req.route ).to.have.property( "name", "index" );
+                done();
+            }).on( "error", done );
+        });
+
         test( "req.buildUrl(), req.buildFullUrl()", function( done ) {
             var req;
             var stub = this.stub;
@@ -259,9 +279,7 @@ suite( "Shrinkroute", function() {
                 expect( req ).to.have.property( "buildUrl" );
                 expect( req ).to.have.property( "buildFullUrl" );
                 done();
-            }).on( "error", function( err ) {
-                done( err );
-            });
+            }).on( "error", done );
         });
 
         test( "res.locals.url(), res.locals.fullUrl()", function( done ) {
@@ -273,9 +291,7 @@ suite( "Shrinkroute", function() {
                 expect( res.locals ).to.have.property( "url" );
                 expect( res.locals ).to.have.property( "fullUrl" );
                 done();
-            }).on( "error", function( err ) {
-                done( err );
-            });
+            }).on( "error", done );
         });
     });
 
