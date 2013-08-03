@@ -75,6 +75,7 @@ Get or set the app of this Shrinkroute instance.
 If setting the app, the following things will be available from now on:
 
 * `app.shrinkroute` - the Shrinkroute instance
+* `req.route.name` - the name of the matched route
 
 ## `.middleware`
 This is the Express middleware responsible for giving the following helpers to your request/response objects:
