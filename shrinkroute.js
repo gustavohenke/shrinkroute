@@ -109,6 +109,9 @@
     // John Resig style constructors!
     function Shrinkroute( app, routes, separator ) {
         if ( this instanceof Shrinkroute ) {
+            // Force the context to be always this, so no problems when using the middleware!
+            this.middleware = this.middleware.bind( this );
+
             this.separator( separator || "." );
             this.app( app );
             this.route( routes );
@@ -120,33 +123,30 @@
     // Shrinkroute prototype
     // ------------------------------------------------------------
     Shrinkroute.prototype.app = function( app ) {
-        var urlBuilder, dispatcher;
-
         if ( app != null ) {
-            if ( app !== this._app ) {
-                // We'll patch the dispatcher... ta-da! So we'll backup it once.
-                this._dispatcher = app._router._dispatch;
-            }
-
-            urlBuilder = this.url.bind( this );
-            dispatcher = this._dispatcher;
-
             app.shrinkroute = this;
-
-            // Give the local 'url'
-            app.locals.url = urlBuilder;
-
-            // Hook into the Express router to give in-route helper
-            app._router._dispatch = function( req, res, next ) {
-                req.buildUrl = urlBuilder;
-                dispatcher.call( app._router, req, res, next );
-            };
-
             this._app = app;
+
             return this;
         }
 
         return this._app;
+    };
+
+    // Shrinkroute middleware.
+    // Simply gives our useful URL builders.
+    Shrinkroute.prototype.middleware = function( req, res, next ) {
+        var urlBuilder = this.url.bind( this );
+        var fullUrlBuilder = this.fullUrl.bind( this, req );
+
+        // Give locals and request patches
+        req.buildUrl = urlBuilder;
+        res.locals.url = urlBuilder;
+
+        req.buildFullUrl = fullUrlBuilder;
+        res.locals.fullUrl = fullUrlBuilder;
+
+        next();
     };
 
     // Get/set routes in the Shrinkroute instance and Express
@@ -238,6 +238,26 @@
         }
 
         return path;
+    };
+
+    // Constructs a full URL, with host and port.
+    // This will call Shrinkroute.url() internally, so it accept the same args
+    Shrinkroute.prototype.fullUrl = function( req, route, params, append ) {
+        var hostUrl;
+        var path = this.url( route, params, append );
+        var parsedUrl = url.parse( path );
+
+        if ( typeof req === "string" ) {
+            hostUrl = url.parse( req );
+
+            parsedUrl.protocol = hostUrl.protocol;
+            parsedUrl.host = hostUrl.host;
+        } else {
+            parsedUrl.protocol = req.protocol;
+            parsedUrl.host = req.get( "host" );
+        }
+
+        return url.format( parsedUrl );
     };
 
     module.exports = exports.Shrinkroute = Shrinkroute;

@@ -5,6 +5,7 @@ suite( "Shrinkroute", function() {
     var expect = require( "chai" ).expect;
     var shrinkroute = require( ".." );
     var express = require( "express" );
+    var request = require( "http" ).get;
 
     setup(function() {
         this.app = express();
@@ -25,9 +26,6 @@ suite( "Shrinkroute", function() {
 
             // Set the shrinkroute in the app
             expect( this.app ).to.have.property( "shrinkroute" );
-
-            // Holds a backup of the app route dispatcher
-            expect( shrinkr._dispatcher ).to.not.equal( this.app._router._dispatch );
         });
 
         test( "get the current app", function() {
@@ -128,7 +126,7 @@ suite( "Shrinkroute", function() {
         });
     });
 
-    // url building suite
+    // url building suites
     // -----------------------------------------------------
     suite( "URL building", function() {
         test( "[#1] inexistent routes should return empty url", function() {
@@ -200,6 +198,19 @@ suite( "Shrinkroute", function() {
         });
     });
 
+    suite( "full URL building", function() {
+        test( "build full URL with host string", function() {
+            var shrinkr = shrinkroute( this.app, {
+                user: {
+                    path: "/user/:id"
+                }
+            });
+            var url = shrinkr.fullUrl( "http://foobar.com", "user", { id: 1 } );
+
+            expect( url ).to.equal( "http://foobar.com/user/1" );
+        });
+    });
+
     // general functionality tests
     // -----------------------------------------------------
     test( "uses John Resig style constructors", function() {
@@ -207,27 +218,65 @@ suite( "Shrinkroute", function() {
         expect( shrinkr ).to.be.an.instanceOf( shrinkroute );
     });
 
-    test( "gives local 'url'", function() {
-        var oldLocal = this.app.locals.url;
+    suite( "helpers", function() {
+        suiteSetup(function( done ) {
+            var ctx = this;
+            var app = express();
 
-        shrinkroute( this.app, {} );
-        expect( this.app.locals.url ).to.be.a( "function" )
-                                     .and.to.not.equal( oldLocal );
-    });
+            var shrinkr = shrinkroute( app );
+            this.stub = sinon.stub();
+            this.stub.callsArg( 2 ); // next() from express
 
-    test( "gives request 'buildUrl'", function() {
-        var req, spy;
+            app.use( shrinkr.middleware );
+            app.use( this.stub );
 
-        shrinkroute( this.app, {} );
-        spy = sinon.spy( this.app._router, "_dispatch" );
+            this.sockets = [];
+            this.server = app.listen(function() {
+                this.on( "connection", function( socket ) {
+                    ctx.sockets.push( socket );
+                });
 
-        // We wrap this in try..catch because we don't care about Express exceptions
-        try {
-            spy({}, {}, function() {});
-        } catch ( e ) {}
+                ctx.port = this.address().port;
+                done();
+            });
+        });
 
-        req = spy.args[ 0 ][ 0 ];
-        expect( req ).to.have.property( "buildUrl" );
+        suiteTeardown(function( done ) {
+            // Kill all sockets! We don't need them anymore
+            this.sockets.forEach(function( socket ) {
+                socket.destroy();
+            });
+
+            this.server.close( done );
+        });
+
+        test( "req.buildUrl(), req.buildFullUrl()", function( done ) {
+            var req;
+            var stub = this.stub;
+
+            request( "http://127.0.0.1:" + this.port, function() {
+                req = stub.lastCall.args[ 0 ];
+                expect( req ).to.have.property( "buildUrl" );
+                expect( req ).to.have.property( "buildFullUrl" );
+                done();
+            }).on( "error", function( err ) {
+                done( err );
+            });
+        });
+
+        test( "res.locals.url(), res.locals.fullUrl()", function( done ) {
+            var res;
+            var stub = this.stub;
+
+            request( "http://127.0.0.1:" + this.port, function() {
+                res = stub.lastCall.args[ 1 ];
+                expect( res.locals ).to.have.property( "url" );
+                expect( res.locals ).to.have.property( "fullUrl" );
+                done();
+            }).on( "error", function( err ) {
+                done( err );
+            });
+        });
     });
 
 });
