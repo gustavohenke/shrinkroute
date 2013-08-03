@@ -1,10 +1,10 @@
 # Shrinkroute [![Build Status](https://travis-ci.org/gustavohenke/shrinkroute.png)](https://travis-ci.org/gustavohenke/shrinkroute) [![NPM version](https://badge.fury.io/js/shrinkroute.png)](http://badge.fury.io/js/shrinkroute)
 
-Named and nested routes for Express. Helps you in achieving DRY routes!
+Named and nested routes for Express, with URL building support. Helps you in achieving DRY routes!
 
 Easy as that:
 ```javascript
-shrinkroute( app, {
+var shrinkr = shrinkroute( app, {
     "user": {
         path: "/user/:id?",
         get: showOrListUsers,
@@ -13,15 +13,23 @@ shrinkroute( app, {
     }
 });
 
+// To provide URL building helpers, the middleware needs to be used
+app.use( shrinkr.middleware );
+
 // in your routes...
 function createUser( req, res, next ) {
     User.create(..., function( err, userId ) {
-        res.redirect( req.buildUrl("user", { id: userId ) );
+        // redirects to /user/1 (or any other userId...)
+        res.redirect( req.buildUrl( "user", { id: userId } ) );
+
+        // if full URLs are needed, try below - redirects to http://foobar.com/user/1
+        res.redirect( req.buildFullUrl( "user", { id: userId } ) );
     });
 }
 
 // or views...
 <a href="<%= url( "user", { id: 1 }) %>">User profile</a>
+<a href="<%= fullUrl( "user", { id: 1 }) %>">User profile</a>
 ```
 
 ## Nested routes
@@ -67,8 +75,11 @@ Get or set the app of this Shrinkroute instance.
 If setting the app, the following things will be available from now on:
 
 * `app.shrinkroute` - the Shrinkroute instance
-* `app.locals.url` - the Shrinkroute URL builder. Will be automatically available to all of your views.
-* `req.buildUrl` - the Shrinkroute URL builder, available only inside a route.
+
+## `.middleware`
+This is the Express middleware responsible for giving the following helpers to your request/response objects:
+* `req.buildUrl` and `res.locals.url` - builds paths for a route. The same as using `shrinkr.url()`.
+* `req.buildFullUrl` and `res.locals.fullUrl` - builds full URLs for a route. The same as using `shrinkr.fullUrl()`.
 
 ### `.route( name[, route])`
 Get or set a route by its name.
@@ -79,7 +90,7 @@ Get or set all routes at once.
 ### `.separator( [separator] )`
 Get or set the routes namespace separator. Useful for when using nested routes.
 
-### `.url( [name][, params][, append] )`
+### `.url( name[, params][, append] )`
 Build the URL for a route. If the route path has parameters in the Express style (`:param`), they must be passed as a object in the `params` argument:
 
 ```javascript
@@ -104,6 +115,17 @@ shrinkr.url( "users", {
 }, false);
 
 // => /users
+```
+
+### `.fullUrl( name[, params][, append] )`
+Builds full URLs for a given route that include protocol, host and port. Respects the same rules as `.url()`.
+
+```javascript
+req.buildFullUrl( "users", {
+  name: "foo"
+});
+
+// => http://foobar.com/users?name=foo
 ```
 
 ## Testing
