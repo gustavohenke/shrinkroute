@@ -1,7 +1,7 @@
 {
     "name": "shrinkroute",
     "description": "Easy named routes for Express.",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "main": "./shrinkroute.js",
     "keywords": [
         "express",
@@ -26,7 +26,7 @@
     },
     "dependencies": {
         "qs": "0.6.5",
-        "extend": "1.1.3"
+        "extend": "1.2.x"
     },
     "devDependencies": {
         "chai": "1.7.x",
