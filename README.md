@@ -1,6 +1,6 @@
-# Shrinkroute [![Build Status](https://travis-ci.org/gustavohenke/shrinkroute.png)](https://travis-ci.org/gustavohenke/shrinkroute) [![NPM version](https://badge.fury.io/js/shrinkroute.png)](http://badge.fury.io/js/shrinkroute)
+# Shrinkroute [![Build Status](https://travis-ci.org/gustavohenke/shrinkroute.png)](https://travis-ci.org/gustavohenke/shrinkroute) [![NPM version](https://badge.fury.io/js/shrinkroute.png)](http://badge.fury.io/js/shrinkroute) [![Dependency Status](https://gemnasium.com/gustavohenke/shrinkroute.png)](https://gemnasium.com/gustavohenke/shrinkroute)
 
-Named and nested routes for Express, with URL building support. Helps you in achieving DRY routes!
+Named and nested routes for Express 3+, with URL building support. Helps you in achieving DRY routes!
 
 Easy as that:
 ```javascript
