@@ -71,8 +71,8 @@ Returns a new instance of Shrinkroute. This is a shortcut for the following:
 ```javascript
 var shrinkr = shrinkroute();
 shrinkr.app( app );
-shrinkr.routes( routes );
 shrinkr.separator( separator );
+shrinkr.route( routes );
 ```
 
 ### `.app( [app] )`
