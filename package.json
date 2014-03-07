@@ -1,7 +1,7 @@
 {
     "name": "shrinkroute",
     "description": "Easy named routes for Express.",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "main": "./src/shrinkroute.js",
     "keywords": [
         "express",
