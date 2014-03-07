@@ -2,7 +2,7 @@
     "name": "shrinkroute",
     "description": "Easy named routes for Express.",
     "version": "0.2.2",
-    "main": "./shrinkroute.js",
+    "main": "./src/shrinkroute.js",
     "keywords": [
         "express",
         "route",
@@ -36,6 +36,6 @@
     },
     "scripts": {
         "prepublish": "npm prune",
-        "test": "node test.js"
+        "test": "mocha"
     }
 }
