@@ -13,9 +13,6 @@ var shrinkr = shrinkroute( app, {
     }
 });
 
-// To provide URL building helpers, the middleware needs to be used
-app.use( shrinkr.middleware );
-
 // in your routes...
 function createUser( req, res, next ) {
     User.create(..., function( err, userId ) {
@@ -31,6 +28,8 @@ function createUser( req, res, next ) {
 <a href="<%= url( "user", { id: 1 }) %>">User profile</a>
 <a href="<%= fullUrl( "user", { id: 1 }) %>">User profile</a>
 ```
+
+__ATTENTION:__ Version 0.3.0 automatically adds the middleware responsible for providing URL builders in the view. When upgrading from previous versions, remove `app.use( shrinkr.middleware );` line.
 
 ## Nested routes
 
@@ -49,6 +48,12 @@ shrinkroute( app, {
 ```
 
 This will end up in a route named `admin` which map to `/admin`, and another route named `admin.users` which map to `/admin/users`.
+
+
+## URL Builders in the view and in the request
+The following functions are automatically available to you in every route _set by Shrinkroute_:
+* `req.buildUrl` and `res.locals.url` - builds paths for a route. The same as using `shrinkr.url()`.
+* `req.buildFullUrl` and `res.locals.fullUrl` - builds full URLs for a route. The same as using `shrinkr.fullUrl()`.
 
 ## Installation
 
@@ -77,16 +82,14 @@ If setting the app, the following things will be available from now on:
 * `app.shrinkroute` - the Shrinkroute instance
 * `req.route.name` - the name of the matched route
 
-## `.middleware`
-This is the Express middleware responsible for giving the following helpers to your request/response objects:
-* `req.buildUrl` and `res.locals.url` - builds paths for a route. The same as using `shrinkr.url()`.
-* `req.buildFullUrl` and `res.locals.fullUrl` - builds full URLs for a route. The same as using `shrinkr.fullUrl()`.
+### `.route( name[, route] )`
+Get or set a route by its name. When setting the route, the route path must be passed as `route.path`.
 
-### `.route( name[, route])`
-Get or set a route by its name.
+### `.route( name, path, route )`
+Set a route.
 
 ### `.route( [routes] )`
-Get or set all routes at once.
+Get all routes or set various routes at once.
 
 ### `.separator( [separator] )`
 Get or set the routes namespace separator. Useful for when using nested routes.
@@ -134,8 +137,11 @@ req.buildFullUrl( "users", {
 Shrinkroute is tested with [Mocha](http://visionmedia.github.io/mocha). Inside the project root, run:
 
 ```shell
-npm install -d
+npm install
 npm test
 ```
 
 This will do the job for you!
+
+## License
+MIT

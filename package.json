@@ -2,7 +2,7 @@
     "name": "shrinkroute",
     "description": "Easy named routes for Express.",
     "version": "0.2.2",
-    "main": "./shrinkroute.js",
+    "main": "./src/shrinkroute.js",
     "keywords": [
         "express",
         "route",
@@ -25,17 +25,17 @@
         "node": ">=0.10.0"
     },
     "dependencies": {
-        "qs": "0.6.5",
-        "extend": "1.2.x"
+        "qs": "~0.6.6",
+        "extend": "~1.2.1"
     },
     "devDependencies": {
-        "chai": "1.8.x",
-        "express": ">=3.0.0",
-        "mocha": "1.13.x",
-        "sinon": "1.7.x"
+        "chai": "~1.9.0",
+        "express": "3.x.x",
+        "mocha": "~1.17.0",
+        "sinon": "~1.9.0"
     },
     "scripts": {
         "prepublish": "npm prune",
-        "test": "node test.js"
+        "test": "mocha"
     }
 }
