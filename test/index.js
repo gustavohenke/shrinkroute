@@ -40,7 +40,7 @@ suite( "Shrinkroute", function() {
     // separator suite
     // -----------------------------------------------------
     suite( "separator", function() {
-        test( "should be created by default as '.'", function() {
+        test( "should use default '.'", function() {
             var shrinkr = shrinkroute();
             expect( shrinkr.separator() ).to.equal( "." );
         });
@@ -222,21 +222,16 @@ suite( "Shrinkroute", function() {
         suiteSetup(function( done ) {
             var ctx = this;
             var app = express();
+            var shrinkr = shrinkroute( app );
 
-            var shrinkr = shrinkroute( app, {
-                index: {
-                    path: "/"
-                }
-            });
             this.stub = sinon.stub();
             this.stub.callsArg( 2 ); // next() from express
-
-            app.use( shrinkr.middleware );
             app.use( this.stub );
-            app.use( app.router );
 
-            app.get( "/", function( req, res ) {
-                res.end();
+            shrinkr.route( "index", "/", {
+                get: function( req, res ) {
+                    res.end()
+                }
             });
 
             this.sockets = [];
