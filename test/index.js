@@ -218,6 +218,25 @@ suite( "Shrinkroute", function() {
         expect( shrinkr ).to.be.an.instanceOf( shrinkroute );
     });
 
+    test( "[#6] gives middleware in the proper order", function() {
+        // Stack shortcut
+        var stack = this.app.stack;
+
+        // When doing this, app.router will be .use()'d.
+        this.app.get( "/", function() {});
+        shrinkroute( this.app, {
+            foo: {
+                path: "/foo",
+                get: function() {}
+            }
+        });
+
+        // As there is no really way to test if it's our middleware function,
+        // we'll test the function name.
+        expect( stack[ stack.length - 2 ].handle ).to.have.property( "name", "middleware" );
+        expect( stack[ stack.length - 1 ].handle ).to.equal( this.app.router );
+    });
+
     suite( "helpers", function() {
         suiteSetup(function( done ) {
             var ctx = this;
