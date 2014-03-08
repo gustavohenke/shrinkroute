@@ -1,4 +1,8 @@
-# Shrinkroute [![Build Status](https://travis-ci.org/gustavohenke/shrinkroute.png)](https://travis-ci.org/gustavohenke/shrinkroute) [![NPM version](https://badge.fury.io/js/shrinkroute.png)](http://badge.fury.io/js/shrinkroute) [![Dependency Status](https://gemnasium.com/gustavohenke/shrinkroute.png)](https://gemnasium.com/gustavohenke/shrinkroute)
+# Shrinkroute
+[![Build Status](https://travis-ci.org/gustavohenke/shrinkroute.png)](https://travis-ci.org/gustavohenke/shrinkroute)
+[![NPM version](https://badge.fury.io/js/shrinkroute.png)](http://badge.fury.io/js/shrinkroute)
+[![Dependency Status](https://gemnasium.com/gustavohenke/shrinkroute.png)](https://gemnasium.com/gustavohenke/shrinkroute)
+[![Coverage Status](https://coveralls.io/repos/gustavohenke/shrinkroute/badge.png)](https://coveralls.io/r/gustavohenke/shrinkroute)
 
 Named and nested routes for Express 3+, with URL building support. Helps you in achieving DRY routes!
 

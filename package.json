@@ -2,7 +2,7 @@
     "name": "shrinkroute",
     "description": "Easy named routes for Express.",
     "version": "0.3.0",
-    "main": "./src/shrinkroute.js",
+    "main": "./index.js",
     "keywords": [
         "express",
         "route",
@@ -32,10 +32,16 @@
         "chai": "~1.9.0",
         "express": "3.x.x",
         "mocha": "~1.17.0",
-        "sinon": "~1.9.0"
+        "sinon": "~1.9.0",
+        "jscoverage": "~0.3.8",
+        "mocha-lcov-reporter": "~0.0.1",
+        "coveralls": "~2.8.0"
     },
     "scripts": {
         "prepublish": "npm prune",
-        "test": "mocha"
-    }
+        "pretest": "jscoverage src src-cov",
+        "test": "mocha",
+        "ci-test": "SHRINKR_COV=1 mocha -R mocha-lcov-reporter | coveralls"
+    },
+    "license": "MIT"
 }
