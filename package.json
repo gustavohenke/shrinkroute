@@ -39,7 +39,7 @@
     },
     "scripts": {
         "prepublish": "npm prune",
-        "pretest": "jscoverage src src-cov",
+        "preci-test": "jscoverage src src-cov",
         "test": "mocha",
         "ci-test": "SHRINKR_COV=1 mocha -R mocha-lcov-reporter | coveralls"
     },
