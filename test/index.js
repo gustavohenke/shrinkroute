@@ -222,15 +222,15 @@ suite( "Shrinkroute", function() {
         suiteSetup(function( done ) {
             var ctx = this;
             var app = express();
-            var shrinkr = shrinkroute( app );
 
-            this.stub = sinon.stub();
-            this.stub.callsArg( 2 ); // next() from express
-            app.use( this.stub );
+            this.spy = sinon.spy(function( req, res ) {
+                res.end();
+            });
 
-            shrinkr.route( "index", "/", {
-                get: function( req, res ) {
-                    res.end()
+            shrinkroute( app, {
+                index: {
+                    path: "/",
+                    get: this.spy
                 }
             });
 
@@ -256,10 +256,10 @@ suite( "Shrinkroute", function() {
 
         test( "req.route.name", function( done ) {
             var req;
-            var stub = this.stub;
+            var spy = this.spy;
 
             request( "http://127.0.0.1:" + this.port, function() {
-                req = stub.lastCall.args[ 0 ];
+                req = spy.lastCall.args[ 0 ];
                 expect( req.route ).to.have.property( "name", "index" );
                 done();
             }).on( "error", done );
@@ -267,10 +267,10 @@ suite( "Shrinkroute", function() {
 
         test( "req.buildUrl(), req.buildFullUrl()", function( done ) {
             var req;
-            var stub = this.stub;
+            var spy = this.spy;
 
             request( "http://127.0.0.1:" + this.port, function() {
-                req = stub.lastCall.args[ 0 ];
+                req = spy.lastCall.args[ 0 ];
                 expect( req ).to.have.property( "buildUrl" );
                 expect( req ).to.have.property( "buildFullUrl" );
                 done();
@@ -279,10 +279,10 @@ suite( "Shrinkroute", function() {
 
         test( "res.locals.url(), res.locals.fullUrl()", function( done ) {
             var res;
-            var stub = this.stub;
+            var spy = this.spy;
 
             request( "http://127.0.0.1:" + this.port, function() {
-                res = stub.lastCall.args[ 1 ];
+                res = spy.lastCall.args[ 1 ];
                 expect( res.locals ).to.have.property( "url" );
                 expect( res.locals ).to.have.property( "fullUrl" );
                 done();

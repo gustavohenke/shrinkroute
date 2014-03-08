@@ -68,6 +68,10 @@ Shrinkroute.prototype.app = function( app ) {
 
         // Use the middleware immediately
         app.use( middleware );
+
+        // Make sure we're always above app.router
+        moveMiddleware( app );
+
         return this;
     }
 
@@ -282,4 +286,28 @@ function middleware( req, res, next ) {
     res.locals.fullUrl = fullUrlBuilder;
 
     next();
+}
+
+function moveMiddleware( app ) {
+    var shrinkr, router;
+    var stack = app.stack;
+
+    // Find our middleware in the stack
+    shrinkr = _.find( stack, {
+        handle: middleware
+    });
+
+    // Find router middleware in the stack
+    // We can't use app.router or when setting routes it'll not be automatically added
+    router = _.find( stack, {
+        handle: app._router.middleware
+    });
+
+    if ( router ) {
+        // Remove our middleware from the stack temporarily
+        stack.splice( stack.indexOf( shrinkr ), 1 );
+
+        // ...and then put it above the router middleware
+        stack.splice( stack.indexOf( router ), 0, shrinkr );
+    }
 }
