@@ -138,7 +138,7 @@ req.buildFullUrl( "users", {
 
 ## Testing
 
-Shrinkroute is tested with [Mocha](http://visionmedia.github.io/mocha). Inside the project root, run:
+Shrinkroute is tested with [Mocha](http://mochajs.org/). Inside the project root, run:
 
 ```shell
 npm install
